@@ -3,7 +3,7 @@
   publish = ".next"
 
 [build.environment]
-  NEXT_PUBLIC_API_URL = "https://taskmanager-pro-backend.onrender.com/api"
+  NEXT_PUBLIC_API_URL = "https://taskmanagerpro-backend.onrender.com"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
