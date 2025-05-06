@@ -1,0 +1,37 @@
+{
+  "name": "taskmanager-pro-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@chakra-ui/next-js": "^2.4.2",
+    "@chakra-ui/react": "^2.10.7",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "axios": "^1.4.0",
+    "date-fns": "^2.30.0",
+    "framer-motion": "^10.18.0",
+    "next": "13.4.12",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.56.2",
+    "react-hot-toast": "^2.5.2",
+    "react-icons": "^4.10.1",
+    "react-query": "^3.39.3",
+    "socket.io-client": "^4.7.2",
+    "zustand": "^4.5.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.7",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
+    "eslint": "8.48.0",
+    "eslint-config-next": "13.4.12",
+    "typescript": "5.2.2"
+  }
+}

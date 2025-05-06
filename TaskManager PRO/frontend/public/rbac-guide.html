@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskManager PRO - Role-Based Access Control Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #F9FAFB;
+            background-color: #111827;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #60A5FA;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #374151;
+        }
+        .card {
+            background-color: #1F2937;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            border-left: 4px solid #3B82F6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #374151;
+        }
+        th {
+            background-color: #374151;
+            text-align: left;
+            font-weight: 500;
+        }
+        tr:nth-child(even) {
+            background-color: #283141;
+        }
+        .check {
+            color: #10B981;
+            font-weight: bold;
+        }
+        .x {
+            color: #EF4444;
+            font-weight: bold;
+        }
+        .role-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        .admin {
+            background-color: #8B5CF6;
+        }
+        .manager {
+            background-color: #3B82F6;
+        }
+        .user {
+            background-color: #10B981;
+        }
+        .role-header {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .role-description {
+            color: #D1D5DB;
+            margin-bottom: 20px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #374151;
+            color: #9CA3AF;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>TaskManager PRO<br>Role-Based Access Control Guide</h1>
+    
+    <div class="card">
+        <h2>Role Overview</h2>
+        <p>TaskManager PRO uses a role-based access control system to determine what actions each user can perform. Here's what each role can do:</p>
+        
+        <div style="margin-top: 20px;">
+            <div class="role-header">
+                <span class="role-icon admin"></span>
+                Administrator
+            </div>
+            <div class="role-description">
+                Administrators have full access to the system. They can manage all tasks, users, and settings.
+            </div>
+            
+            <div class="role-header">
+                <span class="role-icon manager"></span>
+                Manager
+            </div>
+            <div class="role-description">
+                Managers can oversee team tasks and see all user information but cannot modify user accounts or system settings.
+            </div>
+            
+            <div class="role-header">
+                <span class="role-icon user"></span>
+                Employee
+            </div>
+            <div class="role-description">
+                Regular employees can manage their own tasks and see minimal information about other team members.
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>Permissions Matrix</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Administrator</th>
+                    <th>Manager</th>
+                    <th>Employee</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="4"><strong>Task Management</strong></td>
+                </tr>
+                <tr>
+                    <td>Create Task</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                </tr>
+                <tr>
+                    <td>View All Tasks</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                    <td class="x">✗</td>
+                </tr>
+                <tr>
+                    <td>View Own Tasks</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                </tr>
+                <tr>
+                    <td>Update Any Task</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                    <td class="x">✗</td>
+                </tr>
+                <tr>
+                    <td>Update Own Task</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                </tr>
+                <tr>
+                    <td>Delete Any Task</td>
+                    <td class="check">✓</td>
+                    <td class="x">✗</td>
+                    <td class="x">✗</td>
+                </tr>
+                <tr>
+                    <td>Delete Own Task</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                </tr>
+                
+                <tr>
+                    <td colspan="4"><strong>User Management</strong></td>
+                </tr>
+                <tr>
+                    <td>View All Users</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                    <td class="x">✗</td>
+                </tr>
+                <tr>
+                    <td>Create New Users</td>
+                    <td class="check">✓</td>
+                    <td class="x">✗</td>
+                    <td class="x">✗</td>
+                </tr>
+                <tr>
+                    <td>Manage User Roles</td>
+                    <td class="check">✓</td>
+                    <td class="x">✗</td>
+                    <td class="x">✗</td>
+                </tr>
+                
+                <tr>
+                    <td colspan="4"><strong>Reports & Settings</strong></td>
+                </tr>
+                <tr>
+                    <td>View Reports</td>
+                    <td class="check">✓</td>
+                    <td class="check">✓</td>
+                    <td class="x">✗</td>
+                </tr>
+                <tr>
+                    <td>System Settings</td>
+                    <td class="check">✓</td>
+                    <td class="x">✗</td>
+                    <td class="x">✗</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        TaskManager PRO - A comprehensive task management system with Role-Based Access Control
+    </footer>
+</body>
+</html> 
