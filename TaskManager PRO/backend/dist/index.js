@@ -40,7 +40,7 @@ app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 // Database connection with improved options
 mongoose_1.default
-    .connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/taskmanager-pro', {
+    .connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/task-manager-pro', {
     serverSelectionTimeoutMS: 5000,
     connectTimeoutMS: 10000,
 })
