@@ -81,6 +81,11 @@ export const hasPermission = (user: IUser, permission: Permission): boolean => {
   return permissions?.includes(permission) || false;
 };
 
+// Get all permissions for a role
+export const getAllPermissions = (role: string): Permission[] => {
+  return rolePermissions[role] || [];
+};
+
 // Middleware to check for specific permissions
 export const requirePermission = (permission: Permission) => {
   return (req: any, res: any, next: any) => {

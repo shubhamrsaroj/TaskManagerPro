@@ -30,24 +30,69 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: function(origin, callback) {
+      if(!origin) return callback(null, true);
+      
+      const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'https://taskmanagerpr.netlify.app'
+      ];
+      
+      if(allowedOrigins.indexOf(normalizedOrigin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   },
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if(!origin) return callback(null, true);
+    
+    // Remove any trailing slash from the origin
+    const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://taskmanagerpr.netlify.app'
+    ];
+    
+    if(allowedOrigins.indexOf(normalizedOrigin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 
-// Database connection with improved options
-mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/task-manager-pro', {
-    serverSelectionTimeoutMS: 5000,
-    connectTimeoutMS: 10000,
-  })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// Database connection with improved options and retry logic
+const connectWithRetry = () => {
+  mongoose
+    .connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/taskmanager-pro', {
+      serverSelectionTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+    })
+    .then(() => {
+      console.log('Connected to MongoDB');
+    })
+    .catch((err) => {
+      console.error('MongoDB connection error:', err);
+      console.log('Retrying MongoDB connection in 5 seconds...');
+      setTimeout(connectWithRetry, 5000);
+    });
+};
+
+connectWithRetry();
 
 // Socket.io middleware for authentication
 io.use(async (socket, next) => {
@@ -150,6 +195,124 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', authenticateToken, taskRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/notifications', authenticateToken, notificationRoutes);
+
+// Debug routes
+app.get('/api/debug/cors', (req, res) => {
+  res.json({ 
+    message: 'CORS is working correctly',
+    headers: req.headers,
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/debug/db', async (req, res) => {
+  try {
+    const dbState = mongoose.connection.readyState;
+    const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    
+    res.json({
+      state: states[dbState],
+      connected: dbState === 1,
+      collections: collections.map(c => c.name),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: String(error),
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Add debug endpoint for task-related issues
+app.get('/api/debug/tasks', authenticateToken, async (req: any, res) => {
+  try {
+    const { Task } = await import('./models/Task');
+    
+    // Get counts of tasks by status and assignee
+    const tasks = await Task.find({}).select('_id title status assignedTo').lean();
+    const totalCount = tasks.length;
+    
+    // Count by status
+    const statusCounts = tasks.reduce((acc: any, task: any) => {
+      acc[task.status] = (acc[task.status] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Count by assignee
+    const assigneeCounts = tasks.reduce((acc: any, task: any) => {
+      const assigneeId = task.assignedTo ? task.assignedTo.toString() : 'unassigned';
+      acc[assigneeId] = (acc[assigneeId] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Get current user's tasks
+    const currentUserTasks = tasks.filter((task: any) => 
+      task.assignedTo && task.assignedTo.toString() === req.user._id.toString()
+    );
+    
+    res.json({
+      totalTasks: totalCount,
+      statusCounts,
+      assigneeCounts,
+      userTaskCount: currentUserTasks.length,
+      userRole: req.user.role,
+      userId: req.user._id,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: String(error),
+      timestamp: new Date().toISOString() 
+    });
+  }
+});
+
+// Add debug endpoint for user roles and permissions
+app.get('/api/debug/roles', authenticateToken, async (req: any, res) => {
+  try {
+    const { User } = await import('./models/User');
+    const { getAllPermissions } = await import('./middleware/rbac');
+    
+    // Get basic user info
+    const users = await User.find({})
+      .select('_id name email role')
+      .sort({ role: 1, name: 1 })
+      .lean();
+    
+    // Get current user's permissions
+    const currentUserPermissions = getAllPermissions(req.user.role);
+    
+    res.json({
+      users: users.map(user => ({
+        ...user,
+        isCurrentUser: user._id.toString() === req.user._id.toString()
+      })),
+      userCount: users.length,
+      roleCount: users.reduce((acc: any, user: any) => {
+        acc[user.role] = (acc[user.role] || 0) + 1;
+        return acc;
+      }, {}),
+      currentUser: {
+        _id: req.user._id,
+        role: req.user.role,
+        permissions: currentUserPermissions
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: String(error),
+      timestamp: new Date().toISOString() 
+    });
+  }
+});
+
+// Add health check endpoint for monitoring
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // Error handling middleware
 app.use(errorHandler);
